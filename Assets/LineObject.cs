@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DecoObject : MonoBehaviour
+public class LineObject : MonoBehaviour
 {
     bool needRespawn;
     void Start()
@@ -12,12 +12,11 @@ public class DecoObject : MonoBehaviour
 
     void Update()
     {
-        if (needRespawn)
+        if(needRespawn)
         {
             needRespawn = false;
             Vector3 newPos = transform.position;
-            newPos.x = -23f;
-            newPos.y = 0.15f;
+            newPos.x = -24;
             transform.position = newPos;
         }        
     }
