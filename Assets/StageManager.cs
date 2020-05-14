@@ -12,9 +12,15 @@ public class StageManager : MonoBehaviour
     GameObject[] itemArray; // items
 
     public GameObject treePrefab;
-    public GameObject obstacle1Prefab;
-    public GameObject obstacle2Prefab;
+    public GameObject obstacle1Prefab;  // move to player obstacle, width 1 
+    public GameObject obstacle2Prefab;  // stop obstacle, width 2
     public GameObject itemPrefab;
+
+    public GameObject initRoad0;
+    public GameObject initRoad1;
+    public GameObject initRoad2;
+    public GameObject initRoad3;
+    public GameObject initRoad4;
 
 
     float currentSpeed = 0.01f;
@@ -32,6 +38,7 @@ public class StageManager : MonoBehaviour
         treeArray = new GameObject[10]; // 0~4 : left, 5~9 : right
         itemArray = new GameObject[10];
 
+        readStage(1);
         SpawnTrees();
     }
     
@@ -61,5 +68,10 @@ public class StageManager : MonoBehaviour
         Vector3 currentPos = gameObject.transform.position;
         currentPos.x += currentSpeed;
         gameObject.transform.position = currentPos;
+    }
+
+    public void readStage(int stageNum)
+    {
+
     }
 }
