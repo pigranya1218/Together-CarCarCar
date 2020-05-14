@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController instance = null;
+
     public int jumpPower;
     public float moveSpeedZ; // left, right move speed
     GameObject[] roads;  // use to computes moveLeft, moveRight
@@ -25,6 +27,13 @@ public class PlayerController : MonoBehaviour
     bool doMoveRight;
 
     Rigidbody rigidbody;
+
+    void Awake()
+    {
+        if (instance == null) instance = this;
+        else if (instance != this) Destroy(gameObject);
+        DontDestroyOnLoad(gameObject);
+    }
 
     void Start()
     {
@@ -86,13 +95,13 @@ public class PlayerController : MonoBehaviour
         if(doJump && isGround) 
         {
             isGround = false;
-            jump();
+            Jump();
         }
 
         doJump = false;
     }
 
-    private void jump()
+    private void Jump()
     {
         rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
     }
