@@ -1,0 +1,5 @@
+4 o1 x x x x
+3000 x o1 x x x
+5000 x x o1 x x
+7000 x x x o1 x
+9000 x x x x o1
