@@ -1,5 +1,6 @@
-4 o1 x x x x
-3000 x o1 x x x
-5000 x x o1 x x
-7000 x x x o1 x
-9000 x x x x o1
+1000	o1	x	x	o2	x
+3000	x	o2	x	o1	x
+5000	o2	x	o1	x	x
+6000	x	x	o2	x	o1
+7000	x	x	o2	x	x
+9000	o1	x	o2	x	o1

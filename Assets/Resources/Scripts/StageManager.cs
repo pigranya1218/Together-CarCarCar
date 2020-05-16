@@ -17,6 +17,7 @@ public class StageManager : MonoBehaviour
     GameObject[] lineArray; // road lines
     
     GameObject[] itemArray; // TODO: items
+    GameObject endLine;
 
 
     public GameObject road0; // using for set obstacle position
@@ -31,6 +32,7 @@ public class StageManager : MonoBehaviour
     public GameObject linePrefab;
     public GameObject taxiPrefab;  // move to player obstacle, width 1 
     public GameObject busPrefab;  // stop obstacle, width 2
+    public GameObject endLinePrefab; // finish line
     
     public GameObject itemPrefab; // TODO: item
 
@@ -94,20 +96,22 @@ public class StageManager : MonoBehaviour
     {
         for (int i = 0; i < 5; ++i)
         {
-            lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * i), 0.1f, 2.96f), Quaternion.identity);
+            lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * i), 0.01f, 2.96f), Quaternion.identity);
         }
         for (int i = 5; i < 10; ++i)
         {
-            lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * (i - 5)), 0.1f, 4.95f), Quaternion.identity);
+            lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * (i - 5)), 0.01f, 4.95f), Quaternion.identity);
         }
         for (int i = 10; i < 15; ++i)
         {
-            lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * (i - 10)), 0.1f, 6.88f), Quaternion.identity);
+            lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * (i - 10)), 0.01f, 6.88f), Quaternion.identity);
         }
         for (int i = 15; i < 20; ++i)
         {
-            lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * (i - 15)), 0.1f, 8.86f), Quaternion.identity);
+            lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * (i - 15)), 0.01f, 8.86f), Quaternion.identity);
         }
+        endLine = Instantiate(endLinePrefab, new Vector3(-20f, 0.01f, 8.86f), Quaternion.Euler(new Vector3(0, 90, 0)));
+        endLine.SetActive(false);
     }
 
     void SpawnObstacle()
@@ -116,6 +120,9 @@ public class StageManager : MonoBehaviour
         {
             taxiArray[i] = Instantiate(taxiPrefab, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0, 90, 0)));
             taxiArray[i].SetActive(false);
+            
+            busArray[i] = Instantiate(busPrefab, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0, 0, 0)));
+            busArray[i].SetActive(false);
         }
     }
 
@@ -129,8 +136,8 @@ public class StageManager : MonoBehaviour
                 int checkFrame = currentFrame + i;
                 if (checkFrame == (maxFrame - 1)) // end of this stage
                 {
-                    // TODO : show endline
-                    Debug.Log("End of stage");
+                    endLine.transform.position = new Vector3(-30, 0.01f, 6);
+                    endLine.SetActive(true);
                     isPlaying = false;
                     break;
                 }
@@ -142,12 +149,20 @@ public class StageManager : MonoBehaviour
                         {
                             if (!taxiArray[k].activeSelf)
                             {
-                                Vector3 newPos = taxiArray[i].transform.position;
-                                newPos.z = roadArray[j].transform.position.z;
-                                newPos.y = 0.05f;
-                                newPos.x = -20 - 0.01f * i;
-                                taxiArray[k].transform.position = newPos;
+                                taxiArray[k].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j].transform.position.z);
                                 taxiArray[k].SetActive(true);
+                                break;
+                            }
+                        }
+                    }
+                    if (stageInfo[checkFrame, j] == (int)obstacle.bus)
+                    {
+                        for (int k = 0; k < 15; ++k)
+                        {
+                            if (!busArray[k].activeSelf)
+                            {
+                                busArray[k].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j].transform.position.z);
+                                busArray[k].SetActive(true);
                                 break;
                             }
                         }
@@ -160,16 +175,21 @@ public class StageManager : MonoBehaviour
         // move game objects() per frame
         for (int i = 0; i < 10; ++i)
         {
-            MoveToPlayer(treeArray[i], 0);
+            if(treeArray[i].activeSelf) MoveToPlayer(treeArray[i], 0);
         }
         for(int i = 0; i < 20; ++i)
         {
-            MoveToPlayer(lineArray[i], 0);
+            if(lineArray[i].activeSelf) MoveToPlayer(lineArray[i], 0);
         }
         for(int i = 0; i < 15; ++i)
         {
-            if(taxiArray[i].activeSelf) MoveToPlayer(taxiArray[i], 2);
+            if(taxiArray[i].activeSelf) MoveToPlayer(taxiArray[i], 4);
         }
+        for (int i = 0; i < 15; ++i)
+        {
+            if (busArray[i].activeSelf) MoveToPlayer(busArray[i], 0);
+        }
+        if (endLine.activeSelf) MoveToPlayer(endLine, 0);
 
     }
 
@@ -196,11 +216,12 @@ public class StageManager : MonoBehaviour
                 lines[count++] = line;
             }
         }
-        maxFrame = Convert.ToInt32(lines[--count].Split(' ')[0]) + 20; // end of stage frame
+        char delimeter = Convert.ToChar(9); // 9 = \t
+        maxFrame = Convert.ToInt32(lines[--count].Split(delimeter)[0]) + 10; // end of stage frame
         stageInfo = new int[maxFrame, 5]; // 0 : frame, 1 : pos
         for (int i = 0; i <= count; ++i)
         {
-            string[] info = lines[i].Split(' '); // 0 : frame index, 1~5 : object info
+            string[] info = lines[i].Split(delimeter); // 9 = \t, index = 0 : frame index, 1~5 : object info
             int frameIndex = Convert.ToInt32(info[0]);
             for (int j = 0; j < 5; ++j)
             {

@@ -2,24 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObstacleObject : MonoBehaviour
+public class EndLineObject : MonoBehaviour
 {
-    bool needActiveFalse;
+    void Start()
+    {
+    }
 
     void Update()
     {
-        if (needActiveFalse)
-        {
-            gameObject.SetActive(false);
-            needActiveFalse = false;
-        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("MissingArea"))
         {
-            needActiveFalse = true;
+            Debug.Log("Stage is End!");            
+            gameObject.SetActive(false);
         }
     }
 }
