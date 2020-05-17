@@ -12,13 +12,14 @@ public class StageManager : MonoBehaviour
 
     GameObject[] taxiArray;  // obstacle taxi
     GameObject[] busArray;  // obstacle bus
+    Queue<int> waitingTaxiIndex = new Queue<int>();  // for avoiding 3-for
+    Queue<int> waitingBusIndex = new Queue<int>();
 
     GameObject[] treeArray; // trees
     GameObject[] lineArray; // road lines
     
     GameObject[] itemArray; // TODO: items
     GameObject endLine;
-
 
     public GameObject road0; // using for set obstacle position
     public GameObject road1;
@@ -36,16 +37,22 @@ public class StageManager : MonoBehaviour
     
     public GameObject itemPrefab; // TODO: item
 
-    public enum obstacle
+    public enum Obstacle
     {
         taxi = 1,
         bus = 2
     }
 
-    int currentSpeed = 4;
+    PlayerController playerController;
+
+    int maxSpeed;
+    int currentSpeed = 0;
     int currentFrame;  // current frame of stage
+    int currentFrameIndex;
     int maxFrame;  // max frame of stage
-    bool isPlaying;
+    bool isMoreLoading;
+    bool speedUp;
+    bool isFinish;
     string stagePath = "Assets/Resources/";
     int[,] stageInfo;
 
@@ -58,6 +65,8 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
+        playerController = PlayerController.instance;
+
         taxiArray = new GameObject[15];
         busArray = new GameObject[15];
 
@@ -72,6 +81,8 @@ public class StageManager : MonoBehaviour
         roadArray[3] = road3;
         roadArray[4] = road4;
 
+        speedUp = false;
+        maxSpeed = playerController.getMaxSpeed();
         currentFrame = 0;
 
         ReadStage(1);
@@ -119,78 +130,82 @@ public class StageManager : MonoBehaviour
         for(int i = 0; i < 15; ++i)
         {
             taxiArray[i] = Instantiate(taxiPrefab, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0, 90, 0)));
+            taxiArray[i].GetComponent<ObstacleObject>().setField(i, (int)Obstacle.taxi);
             taxiArray[i].SetActive(false);
             
             busArray[i] = Instantiate(busPrefab, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0, 0, 0)));
+            busArray[i].GetComponent<ObstacleObject>().setField(i, (int)Obstacle.bus);
             busArray[i].SetActive(false);
+
+            waitingTaxiIndex.Enqueue(i);
+            waitingBusIndex.Enqueue(i);
         }
     }
 
     void Update()
     {
-        if (isPlaying)
+        if (speedUp)  // speed up to Max speed
+        {
+            speedUp = false;
+            StartCoroutine(speedToMax());
+        }
+        if (isMoreLoading)
         {
             // make obstacle per frame
             for (int i = 0; i < currentSpeed; ++i)
             {
-                int checkFrame = currentFrame + i;
-                if (checkFrame == (maxFrame - 1)) // end of this stage
+                if(currentFrameIndex == maxFrame)
                 {
                     endLine.transform.position = new Vector3(-30, 0.01f, 6);
                     endLine.SetActive(true);
-                    isPlaying = false;
+                    isMoreLoading = false;
                     break;
                 }
-                for (int j = 0; j < 5; ++j)
+                int checkFrame = currentFrame + i;
+                if(checkFrame == stageInfo[currentFrameIndex, 0])
                 {
-                    if (stageInfo[checkFrame, j] == (int)obstacle.taxi)
+                    for (int j = 1; j <= 5; ++j)
                     {
-                        for (int k = 0; k < 15; ++k)
+                        if (stageInfo[currentFrameIndex, j] == (int) Obstacle.taxi)
                         {
-                            if (!taxiArray[k].activeSelf)
-                            {
-                                taxiArray[k].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j].transform.position.z);
-                                taxiArray[k].SetActive(true);
-                                break;
-                            }
+                            int waitingTaxi = waitingTaxiIndex.Dequeue();
+                            taxiArray[waitingTaxi].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j - 1].transform.position.z);
+                            taxiArray[waitingTaxi].SetActive(true);
+                            
+                        } else if (stageInfo[currentFrameIndex, j] == (int) Obstacle.bus)
+                        {
+                            int waitingBus = waitingBusIndex.Dequeue();
+                            busArray[waitingBus].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j - 1].transform.position.z);
+                            busArray[waitingBus].SetActive(true);
                         }
                     }
-                    if (stageInfo[checkFrame, j] == (int)obstacle.bus)
-                    {
-                        for (int k = 0; k < 15; ++k)
-                        {
-                            if (!busArray[k].activeSelf)
-                            {
-                                busArray[k].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j].transform.position.z);
-                                busArray[k].SetActive(true);
-                                break;
-                            }
-                        }
-                    }
+                    currentFrameIndex++;
                 }
             }
             currentFrame += currentSpeed;
         }
 
         // move game objects() per frame
-        for (int i = 0; i < 10; ++i)
+        if(!isFinish)
         {
-            if(treeArray[i].activeSelf) MoveToPlayer(treeArray[i], 0);
+            for (int i = 0; i < 10; ++i)
+            {
+                if (treeArray[i].activeSelf) MoveToPlayer(treeArray[i], 0);
+            }
+            for (int i = 0; i < 20; ++i)
+            {
+                if (lineArray[i].activeSelf) MoveToPlayer(lineArray[i], 0);
+            }
+            for (int i = 0; i < 15; ++i)
+            {
+                if (taxiArray[i].activeSelf) MoveToPlayer(taxiArray[i], 4);
+            }
+            for (int i = 0; i < 15; ++i)
+            {
+                if (busArray[i].activeSelf) MoveToPlayer(busArray[i], 0);
+            }
+            if (endLine.activeSelf) MoveToPlayer(endLine, 0);
         }
-        for(int i = 0; i < 20; ++i)
-        {
-            if(lineArray[i].activeSelf) MoveToPlayer(lineArray[i], 0);
-        }
-        for(int i = 0; i < 15; ++i)
-        {
-            if(taxiArray[i].activeSelf) MoveToPlayer(taxiArray[i], 4);
-        }
-        for (int i = 0; i < 15; ++i)
-        {
-            if (busArray[i].activeSelf) MoveToPlayer(busArray[i], 0);
-        }
-        if (endLine.activeSelf) MoveToPlayer(endLine, 0);
-
     }
 
     private void MoveToPlayer(GameObject gameObject, int objectSpeed)
@@ -217,24 +232,77 @@ public class StageManager : MonoBehaviour
             }
         }
         char delimeter = Convert.ToChar(9); // 9 = \t
-        maxFrame = Convert.ToInt32(lines[--count].Split(delimeter)[0]) + 10; // end of stage frame
-        stageInfo = new int[maxFrame, 5]; // 0 : frame, 1 : pos
-        for (int i = 0; i <= count; ++i)
+        maxFrame = --count;
+        stageInfo = new int[maxFrame, 6]; // 0 : frame, 1 : pos
+        for (int i = 0; i < maxFrame; ++i)
         {
             string[] info = lines[i].Split(delimeter); // 9 = \t, index = 0 : frame index, 1~5 : object info
-            int frameIndex = Convert.ToInt32(info[0]);
-            for (int j = 0; j < 5; ++j)
+            stageInfo[i, 0] = Convert.ToInt32(info[0]);
+            for (int j = 1; j <= 5; ++j)
             {
-                if (info[j + 1] == "o1")
+                if (info[j] == "o1")
                 {
-                    stageInfo[frameIndex, j] = (int)obstacle.taxi;
+                    stageInfo[i, j] = (int) Obstacle.taxi;
                 }
-                if (info[j + 1] == "o2")
+                if (info[j] == "o2")
                 {
-                    stageInfo[frameIndex, j] = (int)obstacle.bus;
+                    stageInfo[i, j] = (int) Obstacle.bus;
                 }
             }
         }
-        isPlaying = true;
+        currentFrameIndex = 0;
+        isFinish = false;
+        isMoreLoading = true;
+        speedUp = true;
     }
+
+    public void EnqueObstacle(int index, int type)
+    {
+        if(type == (int) Obstacle.taxi)
+        {
+            waitingTaxiIndex.Enqueue(index);
+        } else if(type == (int) Obstacle.bus)
+        {
+            waitingBusIndex.Enqueue(index);
+        }
+    }
+
+    public void FinishStage()
+    {
+        StartCoroutine(SpeedToZero());
+    }
+
+    public void ObstacleHit()
+    {
+        playerController.setRestoring(true);
+        StartCoroutine(ObstacleCollision());
+    }
+
+    IEnumerator speedToMax()
+    {
+        playerController.setRestoring(false);
+        while (currentSpeed != maxSpeed)
+        {
+            currentSpeed += 1;
+            yield return new WaitForSeconds(0.3f);
+        }
+    }
+    IEnumerator SpeedToZero()
+    {
+        while(currentSpeed != 0)
+        {
+            currentSpeed -= 1;
+            yield return new WaitForSeconds(0.3f);
+        }
+        isFinish = true;
+    }
+
+    IEnumerator ObstacleCollision()
+    {
+        currentSpeed = 2;
+        yield return new WaitForSeconds(1f);  // invincibility time
+        speedUp = true;
+    }
+
+
 }

@@ -15,8 +15,8 @@ public class PlayerController : MonoBehaviour
     public GameObject road2;
     public GameObject road3;
     public GameObject road4;
-    
 
+    int maxSpeed = 6;
     int currentPos; // current pos of player's car ([0, 4])
     int targetPos;
     int currentLife; // current life of player
@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     bool doJump;
     bool doMoveLeft;
     bool doMoveRight;
+    bool isRestoring;
 
     Rigidbody rigidbody;
 
@@ -112,5 +113,20 @@ public class PlayerController : MonoBehaviour
         {
             isGround = true;
         }
+    }
+
+    public int getMaxSpeed()
+    {
+        return maxSpeed;
+    }
+
+    public bool getRestoring()
+    {
+        return this.isRestoring;
+    }
+
+    public void setRestoring(bool isRestoring)
+    {
+        this.isRestoring = isRestoring;
     }
 }
