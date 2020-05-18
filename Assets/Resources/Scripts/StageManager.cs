@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-
+using UnityEngine.UIElements;
 
 public class StageManager : MonoBehaviour
 {
@@ -39,6 +39,9 @@ public class StageManager : MonoBehaviour
     
     public GameObject itemPrefab; // TODO: item
 
+    public UISlider progressBar;
+    public UILabel timeLabel;
+
     public enum Obstacle
     {
         taxi = 1,
@@ -55,8 +58,11 @@ public class StageManager : MonoBehaviour
     bool isMoreLoading;
     bool speedUp;
     bool isFinish;
+    bool stopTime;
     string stagePath = "Assets/Resources/";
     int[,] stageInfo;
+    float time;
+
 
     void Awake()
     {
@@ -146,7 +152,7 @@ public class StageManager : MonoBehaviour
         if (speedUp)  // speed up to Max speed
         {
             speedUp = false;
-            StartCoroutine(speedToMax());
+            StartCoroutine(SpeedToMax());
         }
         if (isMoreLoading)
         {
@@ -158,6 +164,7 @@ public class StageManager : MonoBehaviour
                     endLine.transform.position = new Vector3(-30, 0.01f, 6);
                     endLine.SetActive(true);
                     isMoreLoading = false;
+                    progressBar.value = 1;
                     break;
                 }
                 int checkFrame = currentFrame + i;
@@ -182,6 +189,7 @@ public class StageManager : MonoBehaviour
                 }
             }
             currentFrame += currentSpeed;
+            progressBar.value = (float)currentFrame / (float) stageInfo[maxFrame - 1, 0];
         }
 
         // move game objects() per frame
@@ -252,7 +260,11 @@ public class StageManager : MonoBehaviour
         currentFrameIndex = 0;
         isFinish = false;
         isMoreLoading = true;
+        progressBar.value = 0;
         speedUp = true;
+        time = 0;
+        stopTime = false;
+        StartCoroutine(StartTime());
     }
 
     public void EnqueObstacle(int index, int type)
@@ -268,6 +280,7 @@ public class StageManager : MonoBehaviour
 
     public void FinishStage()
     {
+        stopTime = true;
         StartCoroutine(SpeedToZero());
     }
 
@@ -276,8 +289,16 @@ public class StageManager : MonoBehaviour
         playerController.setRestoring(true);
         StartCoroutine(ObstacleCollision());
     }
-
-    IEnumerator speedToMax()
+    IEnumerator StartTime()
+    {
+        while (!stopTime)
+        {
+            time += 0.01f;
+            timeLabel.text = string.Format("{0:0.##}", time) + "s";
+            yield return new WaitForSeconds(0.01f);
+        }
+    }
+    IEnumerator SpeedToMax()
     {
         playerController.setRestoring(false);
         while (currentSpeed != maxSpeed)
