@@ -20,6 +20,7 @@ public class StageManager : MonoBehaviour
     
     GameObject[] itemArray; // TODO: items
     GameObject endLine;
+    GameObject explosion;
 
     public GameObject road0; // using for set obstacle position
     public GameObject road1;
@@ -34,6 +35,7 @@ public class StageManager : MonoBehaviour
     public GameObject taxiPrefab;  // move to player obstacle, width 1 
     public GameObject busPrefab;  // stop obstacle, width 2
     public GameObject endLinePrefab; // finish line
+    public GameObject explosionPrefab; // explosion effect prefab
     
     public GameObject itemPrefab; // TODO: item
 
@@ -87,13 +89,12 @@ public class StageManager : MonoBehaviour
 
         ReadStage(1);
         SpawnObstacle();
-        SpawnTrees();
-        SpawnLines();
+        SpawnDecos();
     }
     
-    void SpawnTrees()
+    void SpawnDecos()
     {
-        for(int i = 0; i < 5; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             treeArray[i] = Instantiate(treePrefab, new Vector3(-23 + (8 * i), 0.1f, 0.04f), Quaternion.identity);
         }
@@ -101,10 +102,6 @@ public class StageManager : MonoBehaviour
         {
             treeArray[i] = Instantiate(treePrefab, new Vector3(-23 + (8 * (i - 5)), 0.1f, 11.9f), Quaternion.identity);
         }
-    }
-
-    void SpawnLines()
-    {
         for (int i = 0; i < 5; ++i)
         {
             lineArray[i] = Instantiate(linePrefab, new Vector3(-20f + (7.5f * i), 0.01f, 2.96f), Quaternion.identity);
@@ -123,6 +120,8 @@ public class StageManager : MonoBehaviour
         }
         endLine = Instantiate(endLinePrefab, new Vector3(-20f, 0.01f, 8.86f), Quaternion.Euler(new Vector3(0, 90, 0)));
         endLine.SetActive(false);
+        explosion = Instantiate(explosionPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        explosion.SetActive(false);
     }
 
     void SpawnObstacle()
@@ -299,8 +298,17 @@ public class StageManager : MonoBehaviour
 
     IEnumerator ObstacleCollision()
     {
+        explosion.transform.position = playerController.transform.position;
+        explosion.SetActive(true);
         currentSpeed = 2;
-        yield return new WaitForSeconds(1f);  // invincibility time
+        for(int i = 0; i < 10; ++i)
+        {
+            if (i % 2 == 0) playerController.setTransparent(true);
+            else playerController.setTransparent(false); ;
+
+            yield return new WaitForSeconds(0.2f);
+        }
+        explosion.SetActive(false);
         speedUp = true;
     }
 

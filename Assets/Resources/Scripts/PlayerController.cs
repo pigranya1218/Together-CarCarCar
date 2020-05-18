@@ -28,6 +28,9 @@ public class PlayerController : MonoBehaviour
     bool isRestoring;
 
     Rigidbody rigidbody;
+    MeshRenderer[] meshRenderers;
+    Renderer[] renderers;
+    float[] rendererAlphas;
 
     void Awake()
     {
@@ -39,6 +42,13 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
+        meshRenderers = GetComponentsInChildren<MeshRenderer>();
+        renderers = GetComponentsInChildren<Renderer>();
+        rendererAlphas = new float[renderers.Length];
+        for(int i = 0; i < renderers.Length; ++i)
+        {
+            rendererAlphas[i] = renderers[i].material.color.a;
+        }
         roads = new GameObject[5];
         roads[0] = road0;
         roads[1] = road1;
@@ -129,4 +139,19 @@ public class PlayerController : MonoBehaviour
     {
         this.isRestoring = isRestoring;
     }
+
+    public void setTransparent(bool transparent)
+    {
+        for(int i = 0; i < meshRenderers.Length; ++i)
+        {
+            if (transparent) meshRenderers[i].GetComponent<Renderer>().enabled = false;
+            else meshRenderers[i].GetComponent<Renderer>().enabled = true;
+        }
+        for(int i = 0; i < renderers.Length; ++i)
+        {
+            if (transparent) renderers[i].material.color = new Color(renderers[i].material.color.r, renderers[i].material.color.g, renderers[i].material.color.b, 0);
+            else renderers[i].material.color = new Color(renderers[i].material.color.r, renderers[i].material.color.g, renderers[i].material.color.b, rendererAlphas[i]);
+        }
+    }
+
 }

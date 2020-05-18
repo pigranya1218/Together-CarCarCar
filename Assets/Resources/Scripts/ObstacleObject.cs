@@ -8,12 +8,14 @@ public class ObstacleObject : MonoBehaviour
     public int type;
     StageManager stageManager;
     PlayerController playerController;
+    Rigidbody rigidbody;
     bool needActiveFalse;
 
     void Start()
     {
         stageManager = StageManager.instance;
         playerController = PlayerController.instance;
+        rigidbody = GetComponent<Rigidbody>();
     }
 
     void Update()
@@ -33,6 +35,9 @@ public class ObstacleObject : MonoBehaviour
             needActiveFalse = true;
         } else if (other.gameObject.CompareTag("Player") && !playerController.getRestoring())
         {
+            Vector3 force = new Vector3(0, 15, Random.Range(-15f, 15f));
+            rigidbody.AddForce(force, ForceMode.Impulse);
+            rigidbody.AddTorque(new Vector3(0, 5, 0) * 50);
             stageManager.ObstacleHit();
         }
     }
