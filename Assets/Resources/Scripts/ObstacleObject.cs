@@ -37,7 +37,7 @@ public class ObstacleObject : MonoBehaviour
         {
             Vector3 force = new Vector3(0, 15, Random.Range(-15f, 15f));
             rigidbody.AddForce(force, ForceMode.Impulse);
-            rigidbody.AddTorque(new Vector3(0, 5, 0) * 50);
+            rigidbody.AddTorque(new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f)) * 50);
             stageManager.ObstacleHit();
         }
     }

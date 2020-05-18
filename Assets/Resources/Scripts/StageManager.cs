@@ -298,7 +298,7 @@ public class StageManager : MonoBehaviour
 
     IEnumerator ObstacleCollision()
     {
-        explosion.transform.position = playerController.transform.position;
+        explosion.transform.position = new Vector3(playerController.transform.position.x - 0.5f, playerController.transform.position.y, playerController.transform.position.z);
         explosion.SetActive(true);
         currentSpeed = 2;
         for(int i = 0; i < 10; ++i)
