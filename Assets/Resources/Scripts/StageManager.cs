@@ -218,7 +218,7 @@ public class StageManager : MonoBehaviour
     private void MoveToPlayer(GameObject gameObject, int objectSpeed)
     {
         Vector3 currentPos = gameObject.transform.position;
-        currentPos.x += (currentSpeed + objectSpeed) * 0.01f;
+        currentPos.x += (currentSpeed + objectSpeed) * 5 * Time.deltaTime;
         gameObject.transform.position = currentPos;
     }
 
