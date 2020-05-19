@@ -14,6 +14,7 @@ public class StageManager : MonoBehaviour
     GameObject[] busArray;  // obstacle bus
     Queue<int> waitingTaxiIndex = new Queue<int>();  // for avoiding 3-for
     Queue<int> waitingBusIndex = new Queue<int>();
+    Queue<int> waitingItemIndex = new Queue<int>();
 
     GameObject[] treeArray; // trees
     GameObject[] lineArray; // road lines
@@ -35,17 +36,17 @@ public class StageManager : MonoBehaviour
     public GameObject taxiPrefab;  // move to player obstacle, width 1 
     public GameObject busPrefab;  // stop obstacle, width 2
     public GameObject endLinePrefab; // finish line
-    public GameObject explosionPrefab; // explosion effect prefab
-    
-    public GameObject itemPrefab; // TODO: item
+    public GameObject explosionEffectPrefab; // explosion effect prefab
+    public GameObject boostPrefab; // boost item prefab
 
     public UISlider progressBar;
     public UILabel timeLabel;
 
-    public enum Obstacle
+    public enum OBJECT
     {
-        taxi = 1,
-        bus = 2
+        TAXI = 1,
+        BUS = 2,
+        BOOST = 3
     }
 
     PlayerController playerController;
@@ -77,6 +78,7 @@ public class StageManager : MonoBehaviour
 
         taxiArray = new GameObject[15];
         busArray = new GameObject[15];
+        itemArray = new GameObject[5];
 
         treeArray = new GameObject[10]; // 0~4 : left, 5~9 : right
         itemArray = new GameObject[10];
@@ -95,6 +97,7 @@ public class StageManager : MonoBehaviour
 
         ReadStage(1);
         SpawnObstacle();
+        SpawnItem();
         SpawnDecos();
     }
     
@@ -126,7 +129,7 @@ public class StageManager : MonoBehaviour
         }
         endLine = Instantiate(endLinePrefab, new Vector3(-20f, 0.01f, 8.86f), Quaternion.Euler(new Vector3(0, 90, 0)));
         endLine.SetActive(false);
-        explosion = Instantiate(explosionPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        explosion = Instantiate(explosionEffectPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         explosion.SetActive(false);
     }
 
@@ -135,17 +138,30 @@ public class StageManager : MonoBehaviour
         for(int i = 0; i < 15; ++i)
         {
             taxiArray[i] = Instantiate(taxiPrefab, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0, 90, 0)));
-            taxiArray[i].GetComponent<ObstacleObject>().setField(i, (int)Obstacle.taxi);
+            taxiArray[i].GetComponent<ObstacleObject>().setField(i, (int) OBJECT.TAXI);
             taxiArray[i].SetActive(false);
             
             busArray[i] = Instantiate(busPrefab, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0, 0, 0)));
-            busArray[i].GetComponent<ObstacleObject>().setField(i, (int)Obstacle.bus);
+            busArray[i].GetComponent<ObstacleObject>().setField(i, (int) OBJECT.BUS);
             busArray[i].SetActive(false);
 
             waitingTaxiIndex.Enqueue(i);
             waitingBusIndex.Enqueue(i);
         }
     }
+
+    void SpawnItem()
+    {
+        for (int i = 0; i < 5; ++i)
+        {
+            itemArray[i] = Instantiate(boostPrefab, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0, 90, 0)));
+            itemArray[i].GetComponent<ItemObject>().setField(i);
+            itemArray[i].SetActive(false);
+
+            waitingItemIndex.Enqueue(i);
+        }
+    }
+
 
     void Update()
     {
@@ -154,44 +170,7 @@ public class StageManager : MonoBehaviour
             speedUp = false;
             StartCoroutine(SpeedToMax());
         }
-        if (isMoreLoading)
-        {
-            // make obstacle per frame
-            for (int i = 0; i < currentSpeed; ++i)
-            {
-                if(currentFrameIndex == maxFrame)
-                {
-                    endLine.transform.position = new Vector3(-30, 0.01f, 6);
-                    endLine.SetActive(true);
-                    isMoreLoading = false;
-                    progressBar.value = 1;
-                    break;
-                }
-                int checkFrame = currentFrame + i;
-                if(checkFrame == stageInfo[currentFrameIndex, 0])
-                {
-                    for (int j = 1; j <= 5; ++j)
-                    {
-                        if (stageInfo[currentFrameIndex, j] == (int) Obstacle.taxi)
-                        {
-                            int waitingTaxi = waitingTaxiIndex.Dequeue();
-                            taxiArray[waitingTaxi].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j - 1].transform.position.z);
-                            taxiArray[waitingTaxi].SetActive(true);
-                            
-                        } else if (stageInfo[currentFrameIndex, j] == (int) Obstacle.bus)
-                        {
-                            int waitingBus = waitingBusIndex.Dequeue();
-                            busArray[waitingBus].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j - 1].transform.position.z);
-                            busArray[waitingBus].SetActive(true);
-                        }
-                    }
-                    currentFrameIndex++;
-                }
-            }
-            currentFrame += currentSpeed;
-            progressBar.value = (float)currentFrame / (float) stageInfo[maxFrame - 1, 0];
-        }
-
+        
         // move game objects() per frame
         if(!isFinish)
         {
@@ -211,6 +190,10 @@ public class StageManager : MonoBehaviour
             {
                 if (busArray[i].activeSelf) MoveToPlayer(busArray[i], 0);
             }
+            for (int i = 0; i < 5; ++i)
+            {
+                if (itemArray[i].activeSelf) MoveToPlayer(itemArray[i], 0);
+            }
             if (endLine.activeSelf) MoveToPlayer(endLine, 0);
         }
     }
@@ -218,7 +201,7 @@ public class StageManager : MonoBehaviour
     private void MoveToPlayer(GameObject gameObject, int objectSpeed)
     {
         Vector3 currentPos = gameObject.transform.position;
-        currentPos.x += (currentSpeed + objectSpeed) * 5 * Time.deltaTime;
+        currentPos.x += (currentSpeed + objectSpeed) * Time.deltaTime;
         gameObject.transform.position = currentPos;
     }
 
@@ -249,11 +232,15 @@ public class StageManager : MonoBehaviour
             {
                 if (info[j] == "o1")
                 {
-                    stageInfo[i, j] = (int) Obstacle.taxi;
+                    stageInfo[i, j] = (int) OBJECT.TAXI;
                 }
-                if (info[j] == "o2")
+                else if (info[j] == "o2")
                 {
-                    stageInfo[i, j] = (int) Obstacle.bus;
+                    stageInfo[i, j] = (int) OBJECT.BUS;
+                }
+                else if (info[j] == "b")
+                {
+                    stageInfo[i, j] = (int) OBJECT.BOOST;
                 }
             }
         }
@@ -265,30 +252,107 @@ public class StageManager : MonoBehaviour
         time = 0;
         stopTime = false;
         StartCoroutine(StartTime());
+        StartCoroutine(LoadingObstacles());
     }
 
     public void EnqueObstacle(int index, int type)
     {
-        if(type == (int) Obstacle.taxi)
+        if(type == (int) OBJECT.TAXI)
         {
             waitingTaxiIndex.Enqueue(index);
-        } else if(type == (int) Obstacle.bus)
+        } else if(type == (int) OBJECT.BUS)
         {
             waitingBusIndex.Enqueue(index);
         }
     }
 
+    public void EnqueItem(int index)
+    {
+        waitingItemIndex.Enqueue(index);
+    }
+
     public void FinishStage()
     {
         stopTime = true;
+        playerController.ShowBoost(false);
         StartCoroutine(SpeedToZero());
+    }
+
+    public int GetCurrentSpeed()
+    {
+        return currentSpeed;
     }
 
     public void ObstacleHit()
     {
         playerController.setRestoring(true);
+        playerController.ShowBoost(false);
+        StopCoroutine(SpeedToMax());
+        StopCoroutine(SpeedToBoost());
         StartCoroutine(ObstacleCollision());
     }
+
+    public void BoostModeOn()
+    {
+        StopCoroutine(SpeedToMax());
+        StopCoroutine(SpeedToBoost());
+        StartCoroutine(SpeedToBoost());
+    }
+
+    public void BoostModeOff()
+    {
+        speedUp = true;
+    }
+
+    IEnumerator LoadingObstacles()
+    {
+        // make obstacle per frame
+        while(isMoreLoading)
+        {
+            for (int i = 0; i < currentSpeed * 10; ++i)
+            {
+                if (currentFrameIndex == maxFrame)
+                {
+                    endLine.transform.position = new Vector3(-30, 0.01f, 6);
+                    endLine.SetActive(true);
+                    isMoreLoading = false;
+                    progressBar.value = 1;
+                    break;
+                }
+                int checkFrame = currentFrame + i;
+                if (checkFrame == stageInfo[currentFrameIndex, 0])
+                {
+                    for (int j = 1; j <= 5; ++j)
+                    {
+                        if (stageInfo[currentFrameIndex, j] == (int) OBJECT.TAXI)
+                        {
+                            int waitingTaxi = waitingTaxiIndex.Dequeue();
+                            taxiArray[waitingTaxi].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j - 1].transform.position.z);
+                            taxiArray[waitingTaxi].SetActive(true);
+
+                        }
+                        else if (stageInfo[currentFrameIndex, j] == (int) OBJECT.BUS)
+                        {
+                            int waitingBus = waitingBusIndex.Dequeue();
+                            busArray[waitingBus].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j - 1].transform.position.z);
+                            busArray[waitingBus].SetActive(true);
+                        }
+                        else if (stageInfo[currentFrameIndex, j] == (int)OBJECT.BOOST)
+                        {
+                            int waitingItem = waitingItemIndex.Dequeue();
+                            itemArray[waitingItem].transform.position = new Vector3(-23 - 0.01f * i, 0.01f, roadArray[j - 1].transform.position.z);
+                            itemArray[waitingItem].SetActive(true);
+                        }
+                    }
+                    currentFrameIndex++;
+                }
+            }
+            currentFrame += currentSpeed * 10;
+            progressBar.value = (float)currentFrame / (float)stageInfo[maxFrame - 1, 0];
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
     IEnumerator StartTime()
     {
         while (!stopTime)
@@ -301,20 +365,31 @@ public class StageManager : MonoBehaviour
     IEnumerator SpeedToMax()
     {
         playerController.setRestoring(false);
-        while (currentSpeed != maxSpeed)
+        while (currentSpeed != maxSpeed && !stopTime)
         {
-            currentSpeed += 1;
-            yield return new WaitForSeconds(0.3f);
+            currentSpeed += (currentSpeed < maxSpeed)?1:-1;
+            yield return new WaitForSeconds(0.05f);
         }
     }
     IEnumerator SpeedToZero()
     {
-        while(currentSpeed != 0)
+        while(currentSpeed > 0)
         {
             currentSpeed -= 1;
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.05f);
         }
         isFinish = true;
+    }
+    IEnumerator SpeedToBoost()
+    {
+        playerController.ShowBoost(true);
+        while (currentSpeed < maxSpeed * 3 && !stopTime)
+        {
+            currentSpeed += 1;
+            yield return new WaitForSeconds(0.01f);
+        }
+        yield return new WaitForSeconds(2f);
+        playerController.ShowBoost(false);
     }
 
     IEnumerator ObstacleCollision()

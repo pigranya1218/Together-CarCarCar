@@ -16,10 +16,18 @@ public class PlayerController : MonoBehaviour
     public GameObject road3;
     public GameObject road4;
 
-    int maxSpeed = 6;
+    GameObject[] wheels;
+    public GameObject boostEffect;
+    public GameObject frontRightWheel;
+    public GameObject frontLeftWheel;
+    public GameObject backRightWheel;
+    public GameObject backLeftWheel;
+
+    int maxSpeed = 20;
     int currentPos; // current pos of player's car ([0, 4])
     int targetPos;
     int currentLife; // current life of player
+    int currentSpeed; // current speed of player
 
     bool isGround;
     bool doJump;
@@ -31,6 +39,7 @@ public class PlayerController : MonoBehaviour
     MeshRenderer[] meshRenderers;
     Renderer[] renderers;
     float[] rendererAlphas;
+    StageManager stageManager;
 
     void Awake()
     {
@@ -56,6 +65,12 @@ public class PlayerController : MonoBehaviour
         roads[3] = road3;
         roads[4] = road4;
 
+        wheels = new GameObject[4];
+        wheels[0] = frontLeftWheel;
+        wheels[1] = frontRightWheel;
+        wheels[2] = backLeftWheel;
+        wheels[3] = backRightWheel;
+
         currentPos = 2;  // initial pos
         targetPos = 2;
         currentLife = 3;
@@ -63,6 +78,10 @@ public class PlayerController : MonoBehaviour
         doJump = false;
         doMoveLeft = false;
         doMoveRight = false;
+
+        boostEffect.SetActive(false);
+
+        stageManager = StageManager.instance;
     }
 
     void Update()
@@ -72,7 +91,7 @@ public class PlayerController : MonoBehaviour
         if (doMoveLeft || doMoveRight)
         {
             Vector3 newPos = transform.position;
-            float delta = Math.Min(Math.Abs(roads[targetPos].transform.position.z - newPos.z), moveSpeedZ);
+            float delta = Math.Min(Math.Abs(roads[targetPos].transform.position.z - newPos.z), moveSpeedZ * Time.deltaTime * 150);
             newPos.z = (doMoveLeft) ? (newPos.z - delta) : (newPos.z + delta);
             transform.position = newPos;
             if(roads[targetPos].transform.position.z == transform.position.z)
@@ -92,12 +111,20 @@ public class PlayerController : MonoBehaviour
             {
                 doMoveRight = true;
                 targetPos = currentPos + 1;
-            } 
+            }
+            if (doMoveLeft || doMoveRight) StartCoroutine(RotateLR());
         }
 
         if(isGround && Input.GetKeyDown(KeyCode.Space))
         {
             doJump = true;
+        }
+
+        // rotate wheel
+        currentSpeed = stageManager.GetCurrentSpeed();
+        for(int i = 0; i < 4; ++i)
+        {
+            wheels[i].transform.Rotate(new Vector3(1, 0, 0) * currentSpeed * 30 * Time.deltaTime);
         }
     }
 
@@ -105,6 +132,7 @@ public class PlayerController : MonoBehaviour
     {
         if(doJump && isGround) 
         {
+            StartCoroutine(RotateJump());
             isGround = false;
             Jump();
         }
@@ -151,6 +179,39 @@ public class PlayerController : MonoBehaviour
         {
             if (transparent) renderers[i].material.color = new Color(renderers[i].material.color.r, renderers[i].material.color.g, renderers[i].material.color.b, 0);
             else renderers[i].material.color = new Color(renderers[i].material.color.r, renderers[i].material.color.g, renderers[i].material.color.b, rendererAlphas[i]);
+        }
+    }
+    
+    public void ShowBoost(bool isShow)
+    {
+        boostEffect.SetActive(isShow);
+        if (!isShow) stageManager.BoostModeOff();
+    }
+
+    IEnumerator RotateLR()
+    {
+        for(int i = 0; i < 5; ++i) // rotate
+        {
+            transform.Rotate(new Vector3(0, (doMoveLeft)?-1:1, 0) * 3);
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int i = 0; i < 5; ++i) // restore
+        {
+            transform.Rotate(new Vector3(0, (doMoveLeft) ? 1 : -1, 0) * 3);
+            yield return new WaitForSeconds(0.01f);
+        }
+    }
+    IEnumerator RotateJump()
+    {
+        for (int i = 0; i < 8; ++i) // rotate
+        {
+            transform.Rotate(new Vector3(-0.5f, 0, 0) * 3);
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int i = 0; i < 8; ++i) // restore
+        {
+            transform.Rotate(new Vector3(0.5f, 0, 0) * 3);
+            yield return new WaitForSeconds(0.01f);
         }
     }
 

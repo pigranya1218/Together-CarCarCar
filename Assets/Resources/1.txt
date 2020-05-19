@@ -1,7 +1,7 @@
-1000	o1	x	x	o2	x
+1000	o1	x	b	o2	x
 3000	x	o2	x	o1	x
 5000	o2	x	o1	x	x
-7000	o1	x	x	x	x
+7000	o1	x	x	b	x
 8000	o1	x	x	x	x
 9000	o1	x	x	x	x
 10000	o1	x	x	x	x
