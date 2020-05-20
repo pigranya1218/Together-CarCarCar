@@ -9,6 +9,7 @@ TagManager:
   - MissingArea
   - Grass
   - SmallRoad
+  - Obstacle
   layers:
   - Default
   - TransparentFX

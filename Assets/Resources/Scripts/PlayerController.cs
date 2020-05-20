@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     public GameObject backRightWheel;
     public GameObject backLeftWheel;
 
-    int maxSpeed = 20;
+    int maxSpeed = 25;
     int currentPos; // current pos of player's car ([0, 4])
     int targetPos;
     int currentLife; // current life of player
@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
     bool doMoveLeft;
     bool doMoveRight;
     bool isRestoring;
+    bool isFinish;
 
     Rigidbody rigidbody;
     MeshRenderer[] meshRenderers;
@@ -78,6 +79,7 @@ public class PlayerController : MonoBehaviour
         doJump = false;
         doMoveLeft = false;
         doMoveRight = false;
+        isRestoring = false;
 
         boostEffect.SetActive(false);
 
@@ -101,7 +103,7 @@ public class PlayerController : MonoBehaviour
             }
         }   
         // input check, move car (left, right, jump)
-        if(!doMoveLeft && !doMoveRight && (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)))
+        if(!doMoveLeft && !doMoveRight && (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)) && !isFinish)
         {
             if(Input.GetKeyDown(KeyCode.LeftArrow) && currentPos != 0)
             {
@@ -115,17 +117,21 @@ public class PlayerController : MonoBehaviour
             if (doMoveLeft || doMoveRight) StartCoroutine(RotateLR());
         }
 
-        if(isGround && Input.GetKeyDown(KeyCode.Space))
+        if(isGround && Input.GetKeyDown(KeyCode.Space) && !isFinish)
         {
             doJump = true;
         }
 
         // rotate wheel
         currentSpeed = stageManager.GetCurrentSpeed();
-        for(int i = 0; i < 4; ++i)
+        if(!isFinish)
         {
-            wheels[i].transform.Rotate(new Vector3(1, 0, 0) * currentSpeed * 30 * Time.deltaTime);
+            for (int i = 0; i < 4; ++i)
+            {
+                wheels[i].transform.Rotate(new Vector3(1, 0, 0) * currentSpeed * 30 * Time.deltaTime);
+            }
         }
+       
     }
 
     void FixedUpdate()
@@ -185,7 +191,16 @@ public class PlayerController : MonoBehaviour
     public void ShowBoost(bool isShow)
     {
         boostEffect.SetActive(isShow);
-        if (!isShow) stageManager.BoostModeOff();
+    }
+
+    public void SetFinish(bool isFinish)
+    {
+        this.isFinish = isFinish;
+    }
+
+    public void Rotate(Vector3 v3)
+    {
+        transform.Rotate(v3);
     }
 
     IEnumerator RotateLR()
