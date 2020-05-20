@@ -64,6 +64,8 @@ public class StageManager : MonoBehaviour
     int[,] stageInfo;
     float time;
 
+    private Coroutine lastBoost;
+    private Coroutine lastSpeedToMax;
 
     void Awake()
     {
@@ -92,7 +94,7 @@ public class StageManager : MonoBehaviour
         roadArray[4] = road4;
 
         speedUp = false;
-        maxSpeed = playerController.getMaxSpeed();
+        maxSpeed = playerController.GetMaxSpeed();
         currentFrame = 0;
 
         ReadStage(1);
@@ -168,7 +170,7 @@ public class StageManager : MonoBehaviour
         if (speedUp)  // speed up to Max speed
         {
             speedUp = false;
-            StartCoroutine(SpeedToMax());
+            lastSpeedToMax = StartCoroutine(SpeedToMax());
         }
         
         // move game objects() per frame
@@ -285,18 +287,18 @@ public class StageManager : MonoBehaviour
 
     public void ObstacleHit()
     {
-        playerController.setRestoring(true);
+        playerController.SetRestoring(true);
         playerController.ShowBoost(false);
-        StopCoroutine(SpeedToMax());
-        StopCoroutine(SpeedToBoost());
+        if (lastSpeedToMax != null) StopCoroutine(lastSpeedToMax);
+        if (lastBoost != null) StopCoroutine(lastBoost);
         StartCoroutine(ObstacleCollision());
     }
 
     public void BoostModeOn()
     {
-        StopCoroutine(SpeedToMax());
-        StopCoroutine(SpeedToBoost());
-        StartCoroutine(SpeedToBoost());
+        if(lastSpeedToMax != null) StopCoroutine(lastSpeedToMax);
+        if(lastBoost != null) StopCoroutine(lastBoost);
+        lastBoost = StartCoroutine(SpeedToBoost());
     }
 
     public void BoostModeOff()
@@ -364,7 +366,7 @@ public class StageManager : MonoBehaviour
     }
     IEnumerator SpeedToMax()
     {
-        playerController.setRestoring(false);
+        playerController.SetRestoring(false);
         while (currentSpeed != maxSpeed && !stopTime)
         {
             currentSpeed += (currentSpeed < maxSpeed)?1:-1;
@@ -399,8 +401,8 @@ public class StageManager : MonoBehaviour
         currentSpeed = 2;
         for(int i = 0; i < 10; ++i)
         {
-            if (i % 2 == 0) playerController.setTransparent(true);
-            else playerController.setTransparent(false); ;
+            if (i % 2 == 0) playerController.SetTransparent(true);
+            else playerController.SetTransparent(false); ;
 
             yield return new WaitForSeconds(0.2f);
         }

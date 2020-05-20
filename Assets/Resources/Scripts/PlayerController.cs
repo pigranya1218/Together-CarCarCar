@@ -153,22 +153,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public int getMaxSpeed()
+    public int GetMaxSpeed()
     {
         return maxSpeed;
     }
 
-    public bool getRestoring()
+    public bool GetRestoring()
     {
         return this.isRestoring;
     }
 
-    public void setRestoring(bool isRestoring)
+    public void SetRestoring(bool isRestoring)
     {
         this.isRestoring = isRestoring;
     }
 
-    public void setTransparent(bool transparent)
+    public void SetTransparent(bool transparent)
     {
         for(int i = 0; i < meshRenderers.Length; ++i)
         {
@@ -190,15 +190,30 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator RotateLR()
     {
-        for(int i = 0; i < 5; ++i) // rotate
+        if(doMoveLeft)
         {
-            transform.Rotate(new Vector3(0, (doMoveLeft)?-1:1, 0) * 3);
-            yield return new WaitForSeconds(0.01f);
-        }
-        for (int i = 0; i < 5; ++i) // restore
+            for (int i = 0; i < 5; ++i) // rotate
+            {
+                transform.Rotate(new Vector3(0, -1, 0) * 3);
+                yield return new WaitForSeconds(0.01f);
+            }
+            for (int i = 0; i < 5; ++i) // rotate
+            {
+                transform.Rotate(new Vector3(0, 1, 0) * 3);
+                yield return new WaitForSeconds(0.01f);
+            }
+        } else
         {
-            transform.Rotate(new Vector3(0, (doMoveLeft) ? 1 : -1, 0) * 3);
-            yield return new WaitForSeconds(0.01f);
+            for (int i = 0; i < 5; ++i) // rotate
+            {
+                transform.Rotate(new Vector3(0, 1, 0) * 3);
+                yield return new WaitForSeconds(0.01f);
+            }
+            for (int i = 0; i < 5; ++i) // rotate
+            {
+                transform.Rotate(new Vector3(0, -1, 0) * 3);
+                yield return new WaitForSeconds(0.01f);
+            }
         }
     }
     IEnumerator RotateJump()

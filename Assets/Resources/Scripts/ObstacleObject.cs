@@ -33,7 +33,7 @@ public class ObstacleObject : MonoBehaviour
         if (other.gameObject.CompareTag("MissingArea"))
         {
             needActiveFalse = true;
-        } else if (other.gameObject.CompareTag("Player") && !playerController.getRestoring())
+        } else if (other.gameObject.CompareTag("Player") && !playerController.GetRestoring())
         {
             Vector3 force = new Vector3(0, 15, Random.Range(-15f, 15f));
             rigidbody.AddForce(force, ForceMode.Impulse);
