@@ -5,15 +5,11 @@ using UnityEngine;
 public class ItemObject : MonoBehaviour
 {
     public int index;
-    StageManager stageManager;
-    PlayerController playerController;
     Rigidbody rigidbody;
     bool needActiveFalse;
 
     void Start()
     {
-        stageManager = StageManager.instance;
-        playerController = PlayerController.instance;
         rigidbody = GetComponent<Rigidbody>();
     }
 
@@ -23,7 +19,7 @@ public class ItemObject : MonoBehaviour
         {
             gameObject.SetActive(false);
             needActiveFalse = false;
-            stageManager.EnqueItem(index);
+            StageManager.instance.EnqueItem(index);
         }
     }
 
@@ -35,7 +31,7 @@ public class ItemObject : MonoBehaviour
         } else if (other.gameObject.CompareTag("Player"))
         {
             needActiveFalse = true;
-            stageManager.BoostModeOn();
+            StageManager.instance.BoostModeOn();
         }
     }
 

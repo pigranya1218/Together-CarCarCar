@@ -9,12 +9,7 @@ public class PlayerController : MonoBehaviour
 
     public int jumpPower;
     public float moveSpeedZ; // left, right move speed
-    GameObject[] roads;  // use to computes moveLeft, moveRight
-    public GameObject road0;
-    public GameObject road1;
-    public GameObject road2;
-    public GameObject road3;
-    public GameObject road4;
+    int[] roads;  // use to computes moveLeft, moveRight
 
     GameObject[] wheels;
     public GameObject boostEffect;
@@ -40,7 +35,6 @@ public class PlayerController : MonoBehaviour
     MeshRenderer[] meshRenderers;
     Renderer[] renderers;
     float[] rendererAlphas;
-    StageManager stageManager;
 
     void Awake()
     {
@@ -59,12 +53,7 @@ public class PlayerController : MonoBehaviour
         {
             rendererAlphas[i] = renderers[i].material.color.a;
         }
-        roads = new GameObject[5];
-        roads[0] = road0;
-        roads[1] = road1;
-        roads[2] = road2;
-        roads[3] = road3;
-        roads[4] = road4;
+        roads = new int[] { 2, 4, 6, 8, 10};
 
         wheels = new GameObject[4];
         wheels[0] = frontLeftWheel;
@@ -81,9 +70,9 @@ public class PlayerController : MonoBehaviour
         doMoveRight = false;
         isRestoring = false;
 
-        boostEffect.SetActive(false);
+        isFinish = true;
 
-        stageManager = StageManager.instance;
+        boostEffect.SetActive(false);
     }
 
     void Update()
@@ -93,10 +82,10 @@ public class PlayerController : MonoBehaviour
         if (doMoveLeft || doMoveRight)
         {
             Vector3 newPos = transform.position;
-            float delta = Math.Min(Math.Abs(roads[targetPos].transform.position.z - newPos.z), moveSpeedZ * Time.deltaTime * 150);
+            float delta = Math.Min(Math.Abs(roads[targetPos] - newPos.z), moveSpeedZ * Time.deltaTime * 150);
             newPos.z = (doMoveLeft) ? (newPos.z - delta) : (newPos.z + delta);
             transform.position = newPos;
-            if(roads[targetPos].transform.position.z == transform.position.z)
+            if(roads[targetPos] == transform.position.z)
             {
                 doMoveLeft = doMoveRight = false;
                 currentPos = targetPos;
@@ -123,9 +112,9 @@ public class PlayerController : MonoBehaviour
         }
 
         // rotate wheel
-        currentSpeed = stageManager.GetCurrentSpeed();
         if(!isFinish)
         {
+            currentSpeed = StageManager.instance.GetCurrentSpeed();
             for (int i = 0; i < 4; ++i)
             {
                 wheels[i].transform.Rotate(new Vector3(1, 0, 0) * currentSpeed * 30 * Time.deltaTime);
@@ -201,6 +190,12 @@ public class PlayerController : MonoBehaviour
     public void Rotate(Vector3 v3)
     {
         transform.Rotate(v3);
+    }
+
+    public void Ready()
+    {
+        transform.position = new Vector3(7.5f, 0, 6);
+        transform.rotation = Quaternion.Euler(new Vector3(0, -90, 0));
     }
 
     IEnumerator RotateLR()

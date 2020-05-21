@@ -49,8 +49,6 @@ public class StageManager : MonoBehaviour
         BOOST = 3
     }
 
-    PlayerController playerController;
-
     int maxSpeed;
     int currentSpeed = 0;
     int currentFrame;  // current frame of stage
@@ -76,8 +74,6 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
-        playerController = PlayerController.instance;
-
         taxiArray = new GameObject[15];
         busArray = new GameObject[15];
         itemArray = new GameObject[5];
@@ -95,7 +91,7 @@ public class StageManager : MonoBehaviour
         roadArray[4] = road4;
 
         speedUp = false;
-        maxSpeed = playerController.GetMaxSpeed();
+        maxSpeed = PlayerController.instance.GetMaxSpeed();
         currentFrame = 0;
 
         LoadStage(2);
@@ -261,7 +257,8 @@ public class StageManager : MonoBehaviour
                 }
             }
         }
-        playerController.SetFinish(false);
+        PlayerController.instance.SetFinish(false);
+        PlayerController.instance.Ready();
         currentFrameIndex = 0;
         isFinish = false;
         isMoreLoading = true;
@@ -293,8 +290,8 @@ public class StageManager : MonoBehaviour
     {
         progressBar.value = 1;
         stopTime = true;
-        playerController.ShowBoost(false);
-        playerController.SetFinish(true);
+        PlayerController.instance.ShowBoost(false);
+        PlayerController.instance.SetFinish(true);
         StartCoroutine(SpeedToZero());
     }
 
@@ -305,8 +302,8 @@ public class StageManager : MonoBehaviour
 
     public void ObstacleHitByPlayer()
     {
-        playerController.SetRestoring(true);
-        playerController.ShowBoost(false);
+        PlayerController.instance.SetRestoring(true);
+        PlayerController.instance.ShowBoost(false);
         if (lastSpeedToMax != null) StopCoroutine(lastSpeedToMax);
         if (lastBoost != null) StopCoroutine(lastBoost);
         StartCoroutine(ObstacleCollisionByPlayer());
@@ -393,7 +390,7 @@ public class StageManager : MonoBehaviour
     }
     IEnumerator SpeedToMax()
     {
-        playerController.SetRestoring(false);
+        PlayerController.instance.SetRestoring(false);
         while (currentSpeed != maxSpeed && !stopTime)
         {
             currentSpeed += (currentSpeed < maxSpeed)?1:-1;
@@ -405,7 +402,7 @@ public class StageManager : MonoBehaviour
         while(currentSpeed > 0)
         {
             currentSpeed -= 2;
-            playerController.Rotate(new Vector3(0, -1, 0) * 4);
+            PlayerController.instance.Rotate(new Vector3(0, -1, 0) * 4);
             yield return new WaitForSeconds(0.05f);
         }
         if (currentSpeed < 0) currentSpeed = 0;
@@ -413,26 +410,26 @@ public class StageManager : MonoBehaviour
     }
     IEnumerator SpeedToBoost()
     {
-        playerController.ShowBoost(true);
+        PlayerController.instance.ShowBoost(true);
         while (currentSpeed < maxSpeed * 3 && !stopTime)
         {
             currentSpeed += 1;
             yield return new WaitForSeconds(0.01f);
         }
         yield return new WaitForSeconds(2f);
-        playerController.ShowBoost(false);
+        PlayerController.instance.ShowBoost(false);
         speedUp = true;
     }
 
     IEnumerator ObstacleCollisionByPlayer()
     {
-        explosion[0].transform.position = new Vector3(playerController.transform.position.x - 0.5f, playerController.transform.position.y, playerController.transform.position.z);
+        explosion[0].transform.position = new Vector3(PlayerController.instance.transform.position.x - 0.5f, PlayerController.instance.transform.position.y, PlayerController.instance.transform.position.z);
         explosion[0].SetActive(true);
         currentSpeed = 2;
         for(int i = 0; i < 10; ++i)
         {
-            if (i % 2 == 0) playerController.SetTransparent(true);
-            else playerController.SetTransparent(false); ;
+            if (i % 2 == 0) PlayerController.instance.SetTransparent(true);
+            else PlayerController.instance.SetTransparent(false); ;
 
             yield return new WaitForSeconds(0.2f);
         }

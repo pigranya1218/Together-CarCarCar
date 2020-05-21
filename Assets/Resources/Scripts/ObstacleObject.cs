@@ -8,16 +8,12 @@ public class ObstacleObject : MonoBehaviour
     public int type;
     public bool isCrash;
 
-    StageManager stageManager;
-    PlayerController playerController;
     Rigidbody rigidbody;
     bool needActiveFalse;
     
 
     void Start()
     {
-        stageManager = StageManager.instance;
-        playerController = PlayerController.instance;
         rigidbody = GetComponent<Rigidbody>();
         isCrash = false;
     }
@@ -29,7 +25,7 @@ public class ObstacleObject : MonoBehaviour
             gameObject.SetActive(false);
             needActiveFalse = false;
             isCrash = false;
-            stageManager.EnqueObstacle(index, type);
+            StageManager.instance.EnqueObstacle(index, type);
         }
     }
 
@@ -38,16 +34,16 @@ public class ObstacleObject : MonoBehaviour
         if (other.gameObject.CompareTag("MissingArea"))
         {
             needActiveFalse = true;
-        } else if (other.gameObject.CompareTag("Player") && !playerController.GetRestoring())
+        } else if (other.gameObject.CompareTag("Player") && !PlayerController.instance.GetRestoring())
         {
             Vector3 force = new Vector3(0, 15, Random.Range(-15f, 15f));
             rigidbody.AddForce(force, ForceMode.Impulse);
             rigidbody.AddTorque(new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f)) * 50);
-            stageManager.ObstacleHitByPlayer();
+            StageManager.instance.ObstacleHitByPlayer();
         } else if (other.gameObject.CompareTag("Obstacle"))
         {
             isCrash = true;
-            stageManager.ObstacleHitByObstacle(index, type);
+            StageManager.instance.ObstacleHitByObstacle(index, type);
         }
     }
 

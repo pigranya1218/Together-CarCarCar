@@ -4,10 +4,8 @@ using UnityEngine;
 
 public class EndLineObject : MonoBehaviour
 {
-    StageManager stageManager;
     void Start()
     {
-        stageManager = StageManager.instance;
     }
 
     void Update()
@@ -18,7 +16,7 @@ public class EndLineObject : MonoBehaviour
     {
         if (other.gameObject.CompareTag("MissingArea"))
         {
-            stageManager.FinishStage();
+            StageManager.instance.FinishStage();
             gameObject.SetActive(false);
         }
     }
