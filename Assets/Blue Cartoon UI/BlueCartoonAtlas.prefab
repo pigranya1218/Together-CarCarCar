@@ -45,9 +45,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   material: {fileID: 2100000, guid: 36a02370ff3753545a42c83148f9105f, type: 2}
   mSprites:
-  - name: arrow2
-    x: 0
-    y: 612
+  - name: arrow
+    x: 507
+    y: 21
     width: 315
     height: 411
     borderLeft: 0
@@ -58,22 +58,9 @@ MonoBehaviour:
     paddingRight: 1
     paddingTop: 1
     paddingBottom: 3
-  - name: Atlas
-    x: 0
-    y: 1024
-    width: 2028
-    height: 1024
-    borderLeft: 0
-    borderRight: 0
-    borderTop: 0
-    borderBottom: 0
-    paddingLeft: 6
-    paddingRight: 14
-    paddingTop: 0
-    paddingBottom: 4
   - name: background_scroll_bar
-    x: 1230
-    y: 956
+    x: 0
+    y: 365
     width: 506
     height: 67
     borderLeft: 20
@@ -86,7 +73,7 @@ MonoBehaviour:
     paddingBottom: 1
   - name: pause
     x: 0
-    y: 418
+    y: 171
     width: 193
     height: 193
     borderLeft: 0
@@ -98,8 +85,8 @@ MonoBehaviour:
     paddingTop: 4
     paddingBottom: 3
   - name: pause_pressed
-    x: 0
-    y: 224
+    x: 194
+    y: 171
     width: 193
     height: 193
     borderLeft: 0
@@ -111,40 +98,14 @@ MonoBehaviour:
     paddingTop: 4
     paddingBottom: 3
   - name: progrees_bar
-    x: 316
-    y: 944
+    x: 0
+    y: 433
     width: 913
     height: 79
     borderLeft: 20
     borderRight: 20
     borderTop: 20
     borderBottom: 20
-    paddingLeft: 2
-    paddingRight: 0
-    paddingTop: 0
-    paddingBottom: 1
-  - name: progrees_bar_green
-    x: 316
-    y: 864
-    width: 913
-    height: 79
-    borderLeft: 0
-    borderRight: 0
-    borderTop: 0
-    borderBottom: 0
-    paddingLeft: 2
-    paddingRight: 0
-    paddingTop: 0
-    paddingBottom: 1
-  - name: progrees_bar_red
-    x: 316
-    y: 784
-    width: 913
-    height: 79
-    borderLeft: 0
-    borderRight: 0
-    borderTop: 0
-    borderBottom: 0
     paddingLeft: 2
     paddingRight: 0
     paddingTop: 0

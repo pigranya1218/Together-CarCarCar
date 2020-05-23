@@ -60,6 +60,7 @@ public class StageManager : MonoBehaviour
     bool stopTime;
     string stagePath = "Assets/Resources/";
     int[,] stageInfo;
+    float startTime;
     float time;
 
     private Coroutine lastBoost;
@@ -208,6 +209,8 @@ public class StageManager : MonoBehaviour
                 if (explosion[i].activeSelf) MoveToPlayer(explosion[i], 0);
             }
             
+            time = Time.time - startTime;
+            timeLabel.text = string.Format("{0:0.##}", time) + "s";
         }
     }
 
@@ -266,7 +269,7 @@ public class StageManager : MonoBehaviour
         speedUp = true;
         time = 0;
         stopTime = false;
-        StartCoroutine(StartTime());
+        startTime = Time.time;
         StartCoroutine(LoadingObstacles());
     }
 
@@ -379,15 +382,6 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    IEnumerator StartTime()
-    {
-        while (!stopTime)
-        {
-            time += 0.01f;
-            timeLabel.text = string.Format("{0:0.##}", time) + "s";
-            yield return new WaitForSeconds(0.01f);
-        }
-    }
     IEnumerator SpeedToMax()
     {
         PlayerController.instance.SetRestoring(false);
