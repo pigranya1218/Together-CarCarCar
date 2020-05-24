@@ -55,7 +55,7 @@ public class StageManager : MonoBehaviour
     int currentFrameIndex;
     int maxFrame;  // max frame of stage
     bool isMoreLoading;
-    bool speedUp;
+    bool speedMax;
     bool isFinish;
     bool stopTime;
     string stagePath = "Assets/Resources/";
@@ -91,11 +91,11 @@ public class StageManager : MonoBehaviour
         roadArray[3] = road3;
         roadArray[4] = road4;
 
-        speedUp = false;
+        speedMax = false;
         maxSpeed = PlayerController.instance.GetMaxSpeed();
         currentFrame = 0;
 
-        LoadStage(2);
+        LoadStage(UIManager.instance.stageNum);
         SpawnObstacle();
         SpawnItem();
         SpawnDecos();
@@ -169,9 +169,9 @@ public class StageManager : MonoBehaviour
 
     void Update()
     {
-        if (speedUp)  // speed up to Max speed
+        if (speedMax)  // speed up to Max speed
         {
-            speedUp = false;
+            speedMax = false;
             lastSpeedToMax = StartCoroutine(SpeedToMax());
         }
         
@@ -266,7 +266,7 @@ public class StageManager : MonoBehaviour
         isFinish = false;
         isMoreLoading = true;
         progressBar.value = 0;
-        speedUp = true;
+        speedMax = true;
         time = 0;
         stopTime = false;
         startTime = Time.time;
@@ -412,7 +412,7 @@ public class StageManager : MonoBehaviour
         }
         yield return new WaitForSeconds(2f);
         PlayerController.instance.ShowBoost(false);
-        speedUp = true;
+        speedMax = true;
     }
 
     IEnumerator ObstacleCollisionByPlayer()
@@ -428,6 +428,6 @@ public class StageManager : MonoBehaviour
             yield return new WaitForSeconds(0.2f);
         }
         explosion[0].SetActive(false);
-        speedUp = true;
+        speedMax = true;
     }
 }

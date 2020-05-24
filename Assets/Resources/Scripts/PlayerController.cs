@@ -60,7 +60,13 @@ public class PlayerController : MonoBehaviour
         wheels[1] = frontRightWheel;
         wheels[2] = backLeftWheel;
         wheels[3] = backRightWheel;
+        isFinish = true;
 
+        ResetState();
+    }
+
+    void ResetState()
+    {
         currentPos = 2;  // initial pos
         targetPos = 2;
         currentLife = 3;
@@ -69,8 +75,6 @@ public class PlayerController : MonoBehaviour
         doMoveLeft = false;
         doMoveRight = false;
         isRestoring = false;
-
-        isFinish = true;
 
         boostEffect.SetActive(false);
     }
@@ -194,6 +198,7 @@ public class PlayerController : MonoBehaviour
 
     public void Ready()
     {
+        ResetState();
         transform.position = new Vector3(7.5f, 0, 6);
         transform.rotation = Quaternion.Euler(new Vector3(0, -90, 0));
     }

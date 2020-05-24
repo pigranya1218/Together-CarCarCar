@@ -49,6 +49,10 @@ position 이동 코드들 time delta 이용하도록 변경
 시작 화면 Scene 추가      
 시작 버튼 추가 및 씬 연계 기능 구현   
 
+#### 0524
+<img src="gif/0524.gif" width="40%" height="30%" title="진행상황" alt="진행상황"></img>    
+스테이지 선택 UI 및 로직 추가   
+각종 버그 수정...     
 
 ## TODO
 1. UI
